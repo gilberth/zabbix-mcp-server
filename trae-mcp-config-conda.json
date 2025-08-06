@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "zabbix": {
+      "command": "/opt/homebrew/Caskroom/miniconda/base/envs/zabbix-mcp-server/bin/node",
+      "args": ["/Users/gilberth/Documents/DEV/zabbix-mcp-server/dist/index.js"],
+      "env": {
+        "ZABBIX_URL": "http://137.184.54.73/api_jsonrpc.php",
+        "ZABBIX_USER": "Admin",
+        "ZABBIX_PASSWORD": "zabbix",
+        "READ_ONLY": "true"
+      }
+    }
+  }
+}

@@ -1,3 +1,0 @@
-fastmcp>=2.8.1
-zabbix_utils>=2.0.2
-python-dotenv>=1.1.0

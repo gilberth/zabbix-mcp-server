@@ -1,0 +1,125 @@
+# Source files
+src/
+tsconfig.json
+
+# Development files
+activate.sh
+verificar-mcp.sh
+trae-mcp-config*.json
+
+# Documentation (except README.md)
+CONFIGURACION_TRAE_IDE.md
+TRAE_IDE_SETUP.md
+MCP_SETUP.md
+PROJECT_STATUS.md
+CONVERSION_SUMMARY.md
+CONTRIBUTING.md
+README-typescript.md
+
+# Docker files
+Dockerfile
+docker-compose.yml
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+
+# Config directory
+config/
+
+# Development dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Test files
+*.test.js
+*.test.ts
+test/
+tests/
+
+# Build artifacts
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output/
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# next.js build output
+.next
+
+# nuxt.js build output
+.nuxt
+
+# vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port

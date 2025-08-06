@@ -1,9 +1,10 @@
 # Zabbix MCP Server
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 
-A comprehensive Model Context Protocol (MCP) server for Zabbix integration using FastMCP and python-zabbix-utils. This server provides complete access to Zabbix API functionality through MCP-compatible tools.
+A comprehensive Model Context Protocol (MCP) server for Zabbix integration built with TypeScript and Node.js. This server provides complete access to Zabbix API functionality through MCP-compatible tools with full type safety and modern development features.
 
 <a href="https://glama.ai/mcp/servers/@mpeirone/zabbix-mcp-server">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@mpeirone/zabbix-mcp-server/badge" alt="zabbix-mcp-server MCP server" />
@@ -74,8 +75,9 @@ A comprehensive Model Context Protocol (MCP) server for Zabbix integration using
 
 ### Prerequisites
 
-- Python 3.10 or higher
-- [uv](https://docs.astral.sh/uv/) package manager
+- Node.js 18 or higher
+- npm (comes with Node.js)
+- [Conda](https://docs.conda.io/en/latest/) (recommended for environment management)
 - Access to a Zabbix server with API enabled
 
 ### Quick Start
@@ -86,20 +88,34 @@ A comprehensive Model Context Protocol (MCP) server for Zabbix integration using
    cd zabbix-mcp-server
    ```
 
-2. **Install dependencies:**
+2. **Set up the environment:**
    ```bash
-   uv sync
+   # Create conda environment
+   conda create -n zabbix-mcp-server -c conda-forge nodejs -y
+   
+   # Activate environment (or use the included script)
+   source activate.sh
    ```
 
-3. **Configure environment variables:**
+3. **Install dependencies:**
    ```bash
-   cp config/.env.example .env
+   npm install
+   ```
+
+4. **Build the project:**
+   ```bash
+   npm run build
+   ```
+
+5. **Configure environment variables:**
+   ```bash
+   cp .env.example .env
    # Edit .env with your Zabbix server details
    ```
 
-4. **Test the installation:**
+6. **Test the installation:**
    ```bash
-   uv run python scripts/test_server.py
+   npm test
    ```
 
 ## Configuration
@@ -125,22 +141,34 @@ A comprehensive Model Context Protocol (MCP) server for Zabbix integration using
 
 ### Running the Server
 
-**With startup script (recommended):**
+**Production mode:**
 ```bash
-uv run python scripts/start_server.py
+npm start
+```
+
+**Development mode (with auto-reload):**
+```bash
+npm run dev
 ```
 
 **Direct execution:**
 ```bash
-uv run python src/zabbix_mcp_server.py
+node dist/index.js
 ```
 
 ### Testing
 
 **Run test suite:**
 ```bash
-uv run python scripts/test_server.py
+npm test
 ```
+
+### Available Scripts
+
+- `npm run build` - Compile TypeScript to JavaScript
+- `npm start` - Run the compiled server
+- `npm run dev` - Run in development mode with auto-reload
+- `npm test` - Run tests and verify configuration
 
 ### Read-Only Mode
 
