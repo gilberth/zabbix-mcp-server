@@ -237,6 +237,23 @@ export class ZabbixClient {
     return this.request('usermacro.get', params);
   }
 
+  // Dashboard methods
+  async dashboardGet(params: any = {}) {
+    return this.request('dashboard.get', params);
+  }
+
+  async dashboardCreate(params: any) {
+    return this.request('dashboard.create', params);
+  }
+
+  async dashboardUpdate(params: any) {
+    return this.request('dashboard.update', params);
+  }
+
+  async dashboardDelete(dashboardids: string[]) {
+    return this.request('dashboard.delete', dashboardids);
+  }
+
   // API info methods
   async apiinfoVersion() {
     // apiinfo.version requires empty params object

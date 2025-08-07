@@ -156,6 +156,97 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
         },
       },
+      // Dashboard management
+      {
+        name: 'dashboard_get',
+        description: 'Get Zabbix dashboards with optional filters',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            output: { type: 'string', description: 'Output format (extend, count, etc.)' },
+            dashboardids: { type: 'array', items: { type: 'string' }, description: 'Dashboard IDs to filter' },
+            search: { type: 'object', description: 'Search criteria' },
+            filter: { type: 'object', description: 'Filter criteria' },
+            selectPages: { type: 'string', description: 'Include dashboard pages (extend, count, etc.)' },
+            selectUsers: { type: 'string', description: 'Include dashboard user shares (extend, count, etc.)' },
+            selectUserGroups: { type: 'string', description: 'Include dashboard user group shares (extend, count, etc.)' },
+          },
+        },
+      },
+      {
+        name: 'dashboard_create',
+        description: 'Create a new Zabbix dashboard',
+        inputSchema: {
+          type: 'object',
+          required: ['name'],
+          properties: {
+            name: { type: 'string', description: 'Dashboard name' },
+            display_period: { type: 'number', description: 'Display period in seconds (default: 30)' },
+            auto_start: { type: 'number', description: 'Auto start (0 or 1, default: 1)' },
+            private: { type: 'number', description: 'Dashboard sharing type (0: public, 1: private)' },
+            pages: { 
+              type: 'array', 
+              items: { type: 'object' }, 
+              description: 'Dashboard pages with widgets' 
+            },
+            users: { 
+              type: 'array', 
+              items: { type: 'object' }, 
+              description: 'Dashboard user shares' 
+            },
+            userGroups: { 
+              type: 'array', 
+              items: { type: 'object' }, 
+              description: 'Dashboard user group shares' 
+            },
+          },
+        },
+      },
+      {
+        name: 'dashboard_update',
+        description: 'Update an existing Zabbix dashboard',
+        inputSchema: {
+          type: 'object',
+          required: ['dashboardid'],
+          properties: {
+            dashboardid: { type: 'string', description: 'Dashboard ID to update' },
+            name: { type: 'string', description: 'Dashboard name' },
+            display_period: { type: 'number', description: 'Display period in seconds' },
+            auto_start: { type: 'number', description: 'Auto start (0 or 1)' },
+            private: { type: 'number', description: 'Dashboard sharing type (0: public, 1: private)' },
+            pages: { 
+              type: 'array', 
+              items: { type: 'object' }, 
+              description: 'Dashboard pages to replace existing ones' 
+            },
+            users: { 
+              type: 'array', 
+              items: { type: 'object' }, 
+              description: 'Dashboard user shares to replace existing ones' 
+            },
+            userGroups: { 
+              type: 'array', 
+              items: { type: 'object' }, 
+              description: 'Dashboard user group shares to replace existing ones' 
+            },
+          },
+        },
+      },
+      {
+        name: 'dashboard_delete',
+        description: 'Delete Zabbix dashboards',
+        inputSchema: {
+          type: 'object',
+          required: ['dashboardids'],
+          properties: {
+            dashboardids: { 
+              type: 'array', 
+              items: { type: 'string' }, 
+              description: 'Dashboard IDs to delete' 
+            },
+          },
+        },
+      },
       // API Info
       {
         name: 'apiinfo_version',
@@ -298,6 +389,98 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (args?.limit) params.limit = args.limit;
         
         const result = await client.historyGet(params);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'dashboard_get': {
+        const params: Record<string, any> = { output: args?.output || 'extend' };
+        if (args?.dashboardids) params.dashboardids = args.dashboardids;
+        if (args?.search) params.search = args.search;
+        if (args?.filter) params.filter = args.filter;
+        if (args?.selectPages) params.selectPages = args.selectPages;
+        if (args?.selectUsers) params.selectUsers = args.selectUsers;
+        if (args?.selectUserGroups) params.selectUserGroups = args.selectUserGroups;
+        
+        const result = await client.dashboardGet(params);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'dashboard_create': {
+        validateReadOnly('dashboard_create');
+        if (!args?.name) {
+          throw new Error('Missing required parameter: name');
+        }
+        
+        const params: Record<string, any> = {
+          name: args.name,
+          display_period: args.display_period || 30,
+          auto_start: args.auto_start !== undefined ? args.auto_start : 1,
+        };
+        if (args?.private !== undefined) params.private = args.private;
+        if (args?.pages) params.pages = args.pages;
+        if (args?.users) params.users = args.users;
+        if (args?.userGroups) params.userGroups = args.userGroups;
+        
+        const result = await client.dashboardCreate(params);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'dashboard_update': {
+        validateReadOnly('dashboard_update');
+        if (!args?.dashboardid) {
+          throw new Error('Missing required parameter: dashboardid');
+        }
+        
+        const params: Record<string, any> = {
+          dashboardid: args.dashboardid,
+        };
+        if (args?.name) params.name = args.name;
+        if (args?.display_period) params.display_period = args.display_period;
+        if (args?.auto_start !== undefined) params.auto_start = args.auto_start;
+        if (args?.private !== undefined) params.private = args.private;
+        if (args?.pages) params.pages = args.pages;
+        if (args?.users) params.users = args.users;
+        if (args?.userGroups) params.userGroups = args.userGroups;
+        
+        const result = await client.dashboardUpdate(params);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'dashboard_delete': {
+        validateReadOnly('dashboard_delete');
+        if (!args?.dashboardids || !Array.isArray(args.dashboardids)) {
+          throw new Error('Missing required parameter: dashboardids (must be an array)');
+        }
+        
+        const result = await client.dashboardDelete(args.dashboardids as string[]);
         return {
           content: [
             {
