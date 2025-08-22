@@ -11,6 +11,7 @@ import { ZabbixClient } from './zabbix-client.js';
 export class MCPSSEServer {
   private app: express.Application;
   private servers: Server[] = [];
+  private sessions: Map<string, { server: Server, transport: SSEServerTransport, lastActivity: number }> = new Map();
   private zabbixClient: ZabbixClient;
   private port: number;
 
@@ -70,16 +71,37 @@ export class MCPSSEServer {
 
         this.servers.push(server);
         
+        // Registrar la sesión
+        const sessionId = transport.sessionId;
+        this.sessions.set(sessionId, {
+          server,
+          transport,
+          lastActivity: Date.now()
+        });
+        console.log(`📝 Sesión registrada: ${sessionId}`);
+        
         server.onclose = () => {
-          console.log('Conexión SSE cerrada');
+          console.log(`Conexión SSE cerrada para sesión: ${sessionId}`);
           this.servers = this.servers.filter(s => s !== server);
+          // No eliminar la sesión inmediatamente, mantenerla por un tiempo
+          setTimeout(() => {
+            if (this.sessions.has(sessionId)) {
+              const session = this.sessions.get(sessionId)!;
+              if (Date.now() - session.lastActivity > 300000) { // 5 minutos
+                this.sessions.delete(sessionId);
+                console.log(`🗑️ Sesión expirada eliminada: ${sessionId}`);
+              }
+            }
+          }, 60000); // Verificar después de 1 minuto
         };
 
         await this.setupMCPHandlers(server);
         await server.connect(transport);
       } catch (error) {
         console.error('Error setting up SSE:', error);
-        res.status(500).json({ error: 'Failed to establish SSE connection' });
+        if (!res.headersSent) {
+          res.status(500).json({ error: 'Failed to establish SSE connection' });
+        }
       }
     });
 
@@ -88,19 +110,36 @@ export class MCPSSEServer {
       try {
         console.log('Mensaje recibido');
         const sessionId = req.query.sessionId as string;
-        const transport = this.servers
-          .map(s => s.transport)
-          .find(t => (t as any).sessionId === sessionId);
         
-        if (!transport) {
-          res.status(404).send('Session not found');
+        if (!sessionId) {
+          console.log('❌ Missing sessionId parameter');
+          res.status(400).send('Missing sessionId parameter');
           return;
         }
         
-        await (transport as any).handlePostMessage(req, res);
+        console.log(`🔍 Buscando sesión: ${sessionId}`);
+        console.log(`📋 Sesiones disponibles: ${Array.from(this.sessions.keys())}`);
+
+        const sessionData = this.sessions.get(sessionId);
+        if (!sessionData) {
+          console.log(`❌ Sesión no encontrada: ${sessionId}`);
+          res.status(404).json({ error: 'Session not found' });
+          return;
+        }
+
+        // Actualizar última actividad
+         sessionData.lastActivity = Date.now();
+         const transport = sessionData.transport as any;
+         
+         console.log(`✅ Sesión encontrada: ${sessionId}`);
+        
+        // El transport debe manejar el POST message directamente
+        await transport.handlePostMessage(req, res);
       } catch (error) {
         console.error('Error handling POST message:', error);
-        res.status(500).json({ error: 'Failed to process message' });
+        if (!res.headersSent) {
+          res.status(500).json({ error: 'Failed to process message' });
+        }
       }
     });
   }

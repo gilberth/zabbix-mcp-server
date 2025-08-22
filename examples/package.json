@@ -1,0 +1,17 @@
+{
+  "name": "zabbix-mcp-client-examples",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Ejemplos de clientes para Zabbix MCP Server",
+  "scripts": {
+    "client": "node client-example.js",
+    "web-client": "node web-client-example.js"
+  },
+  "dependencies": {
+    "eventsource": "^2.0.2",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/eventsource": "^1.1.12"
+  }
+}

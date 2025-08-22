@@ -390,8 +390,8 @@ npm run start:sse
     "zabbix-sse": {
       "transport": {
         "type": "sse",
-        "url": "http://localhost:3000/sse",
-        "postUrl": "http://localhost:3000/message"
+        "url": "http://localhost:3001/sse",
+        "postUrl": "http://localhost:3001/message"
       }
     }
   }
@@ -404,8 +404,25 @@ npm run start:sse
   "mcpServers": {
     "zabbix-sse": {
       "transport": "sse",
-      "url": "http://localhost:3000/sse",
-      "postUrl": "http://localhost:3000/message"
+      "url": "http://localhost:3001/sse",
+      "postUrl": "http://localhost:3001/message"
+    }
+  }
+}
+```
+
+**Trae AI:**
+```json
+{
+  "mcpServers": {
+    "zabbix-sse": {
+      "transport": "sse",
+      "url": "http://localhost:3001/sse",
+      "env": {
+        "ZABBIX_URL": "http://137.184.54.73/api_jsonrpc.php",
+        "ZABBIX_USERNAME": "Admin",
+        "ZABBIX_PASSWORD": "zabbix"
+      }
     }
   }
 }
@@ -417,8 +434,8 @@ require('mcphub').setup({
   servers = {
     ['zabbix-sse'] = {
       transport = 'sse',
-      url = 'http://localhost:3000/sse',
-      post_url = 'http://localhost:3000/message'
+      url = 'http://localhost:3001/sse',
+      post_url = 'http://localhost:3001/message'
     }
   }
 })
