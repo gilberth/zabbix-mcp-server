@@ -21,25 +21,72 @@ export class ZabbixClient {
   }
 
   /**
-   * Authenticate with Zabbix API
+   * Authenticate with Zabbix API with robust error handling
    */
   async login(): Promise<void> {
+    console.error('[Zabbix] Starting authentication process...');
+    
+    // Step 1: Verify connectivity first
+    const connectivity = await this.verifyConnectivity();
+    if (!connectivity.connected) {
+      throw new Error('Cannot connect to Zabbix API. Please verify the URL and network connectivity.');
+    }
+    
+    console.error(`[Zabbix] Connected to Zabbix API version: ${connectivity.version}`);
+    
+    // Step 2: Handle token-based authentication
     if (this.config.token) {
-      // Use API token authentication - store token for per-request usage
+      console.error('[Zabbix] Using API token authentication');
       this.authToken = this.config.token;
-      return;
+      
+      // Verify token validity by making a test request
+      try {
+        await this.request('host.get', { limit: 1 });
+        console.error('[Zabbix] Token authentication successful');
+        return;
+      } catch (error) {
+        console.error('[Zabbix] Token authentication failed:', error);
+        throw new Error('Invalid API token provided');
+      }
     }
 
+    // Step 3: Handle username/password authentication
     if (!this.config.user || !this.config.password) {
       throw new Error('Either token or user/password must be provided');
     }
 
-    const response = await this.request('user.login', {
-      username: this.config.user,
-      password: this.config.password,
-    });
+    console.error(`[Zabbix] Attempting username/password authentication for user: ${this.config.user}`);
+    
+    try {
+      const response = await this.request('user.login', {
+        username: this.config.user,
+        password: this.config.password,
+      });
 
-    this.authToken = response.result;
+      this.authToken = response.result;
+      console.error('[Zabbix] Username/password authentication successful');
+      
+      // Verify authentication by making a test request
+      await this.request('host.get', { limit: 1 });
+      console.error('[Zabbix] Authentication verification successful');
+      
+    } catch (error) {
+      console.error('[Zabbix] Authentication failed:', error);
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Login name or password is incorrect')) {
+          throw new Error('Invalid username or password');
+        }
+        if (error.message.includes('User is blocked')) {
+          throw new Error('User account is blocked');
+        }
+        if (error.message.includes('GUI access disabled')) {
+          throw new Error('GUI access is disabled for this user');
+        }
+      }
+      
+      throw new Error(`Authentication failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   /**
@@ -60,7 +107,67 @@ export class ZabbixClient {
   }
 
   /**
-   * Make a request to Zabbix API
+   * Verify Zabbix connectivity and API version
+   */
+  async verifyConnectivity(testAuth: boolean = false): Promise<{ 
+    version: string; 
+    connected: boolean; 
+    authenticated?: boolean;
+    auth_method?: string;
+    error?: string;
+  }> {
+    try {
+      // First, test basic connectivity with apiinfo.version (no auth required)
+      const versionResponse = await this.request('apiinfo.version', {});
+      const result = {
+        version: versionResponse.result,
+        connected: true
+      };
+
+      // If testAuth is requested and we have credentials, test authentication
+      if (testAuth) {
+        try {
+          if (this.authToken) {
+            // Test with existing token
+            await this.request('user.get', { output: ['userid'] });
+            return {
+              ...result,
+              authenticated: true,
+              auth_method: 'existing_token'
+            };
+          } else {
+            // Try to authenticate
+            await this.login();
+            return {
+              ...result,
+              authenticated: true,
+              auth_method: 'username_password'
+            };
+          }
+        } catch (authError) {
+          const authErrorMessage = authError instanceof Error ? authError.message : String(authError);
+          return {
+            ...result,
+            authenticated: false,
+            error: `Authentication failed: ${authErrorMessage}`
+          };
+        }
+      }
+
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('Zabbix connectivity check failed:', error);
+      return {
+        version: 'unknown',
+        connected: false,
+        error: `Connectivity failed: ${errorMessage}`
+      };
+    }
+  }
+
+  /**
+   * Make a request to Zabbix API with robust authentication fallbacks
    */
   async request<T = any>(method: string, params: any = {}): Promise<ZabbixApiResponse<T>> {
     const payload: any = {
@@ -72,31 +179,75 @@ export class ZabbixClient {
 
     // Set up headers
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json-rpc',
     };
 
-    // Add Authorization header for authenticated requests (Zabbix 7.4+ style)
-    if (this.authToken && method !== 'user.login' && method !== 'apiinfo.version') {
-      headers['Authorization'] = `Bearer ${this.authToken}`;
+    // Authentication strategy based on best practices from guide
+    let authAttempts = 0;
+    const maxAuthAttempts = 2;
+
+    while (authAttempts < maxAuthAttempts) {
+      try {
+        // Method 1: Authorization Bearer (recommended for Zabbix 7.4+)
+        if (this.authToken && method !== 'user.login' && method !== 'apiinfo.version') {
+          if (authAttempts === 0) {
+            headers['Authorization'] = `Bearer ${this.authToken}`;
+            console.error(`[Zabbix] Using Bearer authentication for ${method}`);
+          } else {
+            // Method 2: Fallback with auth parameter (legacy compatibility)
+            delete headers['Authorization'];
+            payload.auth = this.authToken;
+            console.error(`[Zabbix] Using legacy auth parameter for ${method}`);
+          }
+        }
+
+        const response: AxiosResponse<ZabbixApiResponse<T>> = await this.client.post('/api_jsonrpc.php', payload, {
+          headers
+        });
+        
+        if (response.data.error) {
+          const error = response.data.error;
+          
+          // Handle specific authentication errors with fallback
+          if (error.code === -32602 && error.message.includes('auth') && authAttempts === 0) {
+            console.warn(`[Zabbix] Bearer auth failed, trying legacy method: ${error.message}`);
+            authAttempts++;
+            continue;
+          }
+          
+          // Handle "Not authorized" errors
+          if (error.code === -32602 && error.message.includes('Not authorized')) {
+            console.error(`[Zabbix] Authorization failed: ${error.message}`);
+            throw new Error(`Zabbix API Authorization Error: ${error.message} (${error.code})`);
+          }
+          
+          console.error(`[Zabbix] API Error: ${error.message} (${error.code})`);
+          throw new Error(`Zabbix API Error: ${error.message} (${error.code})`);
+        }
+
+        console.error(`[Zabbix] Successfully executed ${method}`);
+        return response.data;
+        
+      } catch (error) {
+        if (authAttempts < maxAuthAttempts - 1 && 
+            (error instanceof Error && error.message.includes('auth'))) {
+          console.warn(`[Zabbix] Auth attempt ${authAttempts + 1} failed, trying fallback`);
+          authAttempts++;
+          continue;
+        }
+        
+        if (axios.isAxiosError(error)) {
+          console.error(`[Zabbix] HTTP Error: ${error.message}`);
+          throw new Error(`HTTP Error: ${error.message}`);
+        }
+        
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`[Zabbix] Request failed: ${errorMessage}`);
+        throw new Error(`Zabbix API request failed: ${errorMessage}`);
+      }
     }
 
-    try {
-      const response: AxiosResponse<ZabbixApiResponse<T>> = await this.client.post('/api_jsonrpc.php', payload, {
-        headers
-      });
-      
-      if (response.data.error) {
-        throw new Error(`Zabbix API Error: ${response.data.error.message} (${response.data.error.code})`);
-      }
-
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(`HTTP Error: ${error.message}`);
-      }
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Zabbix API request failed: ${errorMessage}`);
-    }
+    throw new Error('All authentication methods failed');
   }
 
   // Host methods

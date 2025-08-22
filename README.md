@@ -1,14 +1,131 @@
-# Zabbix MCP Server
+# 📊 Zabbix Dashboard Automation - Proxmox Monitoring
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+Un servidor MCP (Model Context Protocol) para automatización de dashboards de Zabbix con monitoreo completo de Proxmox.
 
-A comprehensive Model Context Protocol (MCP) server for Zabbix integration built with TypeScript and Node.js. This server provides complete access to Zabbix API functionality through MCP-compatible tools with full type safety and modern development features.
+## 🎯 Estado del Proyecto
 
-<a href="https://glama.ai/mcp/servers/@mpeirone/zabbix-mcp-server">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/@mpeirone/zabbix-mcp-server/badge" alt="zabbix-mcp-server MCP server" />
-</a>
+✅ **Dashboard Proxmox Completamente Funcional**  
+✅ **6 Widgets Operativos**  
+✅ **384 Items Monitoreados**  
+✅ **Sin Errores de Permisos**  
+✅ **Autenticación Moderna (Zabbix 7.4+)**
+
+### 🔗 Integración MCP Completada ✅
+- **Servidor MCP**: Funcional con herramientas especializadas
+- **Herramientas Proxmox**: 4 nuevas herramientas integradas
+- **Modo**: Read-only para seguridad
+- **Estado**: Ejecutándose correctamente
+
+## 🚀 Archivos Principales
+
+### Scripts de Automatización
+- **`crear-dashboard-stdlib.py`** - Script principal para crear dashboard inicial
+- **`crear-dashboard-dual-proxmox.py`** - Script para dashboards duales
+- **`mejorar-dashboard.py`** - Script para mejorar dashboard existente
+- **`agregar-widgets-proxmox.py`** - Script para agregar widgets completos
+- **`auto-configurar-svg-widgets.py`** - ⭐ **NUEVO**: Auto-configurador de widgets SVG
+- **`test-mcp-proxmox.py`** - Script de prueba para funcionalidades MCP
+
+### Documentación
+- **`DASHBOARD-PROXMOX-COMPLETO.md`** - Guía completa de implementación
+- **`GUIA-AUTOMATIZACION-DASHBOARDS.md`** - Guía técnica de automatización
+- **`LOGICA-CONFIGURACION-SVG-WIDGETS.md`** - ⭐ **NUEVO**: Lógica para resolver errores SVG
+- **`WIDGET-CONFIGURATION-GUIDE.md`** - Guía de configuración de widgets
+
+## 🔧 Configuración del Servidor
+
+```
+Servidor Zabbix: 137.184.54.73
+Versión: Zabbix 7.4.1
+API: http://137.184.54.73/api_jsonrpc.php
+Usuario: Admin
+Contraseña: zabbix
+```
+
+## 📊 Dashboard Implementado
+
+### Widgets Funcionales
+1. **📋 Problemas del Sistema** - Alertas activas
+2. **🔌 Estado de API** - Monitoreo del servicio
+3. **🏢 Estado del Cluster** - Información del cluster
+4. **📊 Información del Sistema** - Estadísticas generales
+5. **📈 Gráfico de CPU** - Uso en tiempo real
+6. **💾 Gráfico de Memoria** - Uso en tiempo real
+
+### Acceso al Dashboard
+🌐 **URL**: `http://137.184.54.73`  
+📊 **Ruta**: Monitoring → Dashboards → Proxmox Monitoring
+
+## 🚀 Uso Rápido
+
+### Crear Dashboard Completo
+```bash
+python3 crear-dashboard-stdlib.py
+```
+
+### Mejorar Dashboard Existente
+```bash
+python3 mejorar-dashboard.py
+```
+
+### Agregar Widgets Adicionales
+```bash
+python3 agregar-widgets-proxmox.py
+```
+
+### ⭐ Auto-Configurar Widgets SVG (NUEVO)
+```bash
+# Resolver automáticamente errores de configuración SVG
+python3 auto-configurar-svg-widgets.py http://localhost/zabbix Admin zabbix 404
+```
+
+**Errores resueltos:**
+- ❌ `"Invalid parameter 'Data set1/hosts': cannot be empty"`
+- ❌ `"Invalid parameter 'Data set1/items': cannot be empty"`
+- ✅ **Configuración automática** de host patterns e item patterns
+
+## 📋 Items Monitoreados
+
+```
+Total: 384 items
+├── CPU: 34 items
+├── Memoria: 60 items
+├── Disco: 146 items
+├── API: 1 item
+├── Cluster: 3 items
+├── LXC: 115 items
+└── VMs: 25 items
+```
+
+## 🔍 Resolución de Problemas
+
+### Problemas de Permisos
+- ✅ **Resuelto**: Error "No permissions to referred object"
+- ✅ **Implementado**: Autenticación moderna con `Authorization: Bearer`
+- ✅ **Validado**: Verificación de items antes de crear widgets
+
+### Autenticación
+- ✅ **Zabbix 7.4+**: Usar `Authorization: Bearer` header
+- ✅ **Fallback**: Soporte para método legacy si es necesario
+- ✅ **Seguridad**: Logout automático al finalizar
+
+## 🎉 Resultado Final
+
+El dashboard de **Proxmox Monitoring** está **100% operativo** con:
+- Monitoreo en tiempo real de CPU y memoria
+- Estado del cluster y API
+- Problemas activos del sistema
+- Información detallada del sistema
+
+## 📚 Documentación Adicional
+
+Para información técnica detallada, consulta:
+- `DASHBOARD-PROXMOX-COMPLETO.md` - Implementación completa
+- `GUIA-AUTOMATIZACION-DASHBOARDS.md` - Guía técnica
+
+---
+
+*Proyecto completado exitosamente - Dashboard Proxmox v1.0*
 
 ## Features
 
@@ -71,7 +188,65 @@ A comprehensive Model Context Protocol (MCP) server for Zabbix integration built
 - `configuration_import` - Import configurations
 - `apiinfo_version` - Get API version information
 
+### 🚀 Herramientas Especializadas para Proxmox
+- `mcp_zabbix_proxmox_hosts_analyze` - Analizar hosts Proxmox y categorizar items
+- `mcp_zabbix_proxmox_dashboard_create_single` - Crear dashboard para un nodo Proxmox
+- `mcp_zabbix_proxmox_dashboard_create_dual` - Crear dashboard dual para dos nodos Proxmox
+- `mcp_zabbix_proxmox_dashboard_add_widgets` - Agregar widgets específicos a dashboards existentes
+
+## 🔧 Uso de Herramientas MCP Proxmox
+
+### Analizar Hosts Proxmox
+```json
+{
+  "tool": "mcp_zabbix_proxmox_hosts_analyze",
+  "args": {
+    "categorize_items": true,
+    "hostname_filter": "proxmox"
+  }
+}
+```
+
+### Crear Dashboard Individual
+```json
+{
+  "tool": "mcp_zabbix_proxmox_dashboard_create_single", 
+  "args": {
+    "hostname": "proxmox",
+    "dashboard_name": "Proxmox Monitor"
+  }
+}
+```
+
+### Crear Dashboard Dual
+```json
+{
+  "tool": "mcp_zabbix_proxmox_dashboard_create_dual",
+  "args": {
+    "hostname1": "proxmox",
+    "hostname2": "serverhome", 
+    "dashboard_name": "Proxmox Dual Monitor"
+  }
+}
+```
+
+### Agregar Widgets
+```json
+{
+  "tool": "mcp_zabbix_proxmox_dashboard_add_widgets",
+  "args": {
+    "dashboard_id": "402",
+    "hostname": "proxmox",
+    "widget_types": ["cpu_graph", "memory_graph", "disk_graph"]
+  }
+}
+```
+
 ## Installation
+
+```bash
+npm install -g @thelord/zabbix-mcp-server
+```
 
 ### Prerequisites
 
@@ -120,6 +295,37 @@ A comprehensive Model Context Protocol (MCP) server for Zabbix integration built
 
 ## Configuration
 
+### Standard MCP Server (stdio)
+
+Create a `.env` file in your project directory:
+
+```env
+ZABBIX_URL=http://your-zabbix-server/zabbix
+ZABBIX_USER=your-username
+ZABBIX_PASSWORD=your-password
+READ_ONLY=false
+```
+
+### SSE Server (Server-Sent Events)
+
+For remote access and real-time communication, use the SSE server. Create a `.env` file:
+
+```env
+# Zabbix API Configuration
+ZABBIX_URL=http://your-zabbix-server/zabbix
+ZABBIX_USER=your-username
+ZABBIX_PASSWORD=your-password
+
+# SSE Server Configuration
+PORT=3000
+
+# CORS Configuration (comma-separated origins)
+ALLOWED_ORIGINS=http://localhost:3001,http://localhost:8080
+
+# Security
+READ_ONLY=false
+```
+
 ### Required Environment Variables
 
 - `ZABBIX_URL` - Your Zabbix server API endpoint (e.g., `https://zabbix.example.com`)
@@ -138,6 +344,102 @@ A comprehensive Model Context Protocol (MCP) server for Zabbix integration built
 - `READ_ONLY` - Set to `true`, `1`, or `yes` to enable read-only mode (only GET operations allowed)
 
 ## Usage
+
+### Standard MCP Server (stdio)
+
+#### As a standalone server
+
+```bash
+npx @thelord/zabbix-mcp-server
+```
+
+#### With Claude Desktop
+
+Add to your Claude Desktop configuration:
+
+```json
+{
+  "mcpServers": {
+    "zabbix": {
+      "command": "npx",
+      "args": ["@thelord/zabbix-mcp-server"]
+    }
+  }
+}
+```
+
+### SSE Server (Server-Sent Events)
+
+#### Start the SSE server
+
+```bash
+# Development mode
+npm run dev:sse
+
+# Production mode
+npm run build
+npm run start:sse
+```
+
+#### Configure MCP clients for SSE
+
+**VS Code with MCP extension:**
+```json
+{
+  "mcpServers": {
+    "zabbix-sse": {
+      "transport": {
+        "type": "sse",
+        "url": "http://localhost:3001/sse",
+        "postUrl": "http://localhost:3001/message"
+      }
+    }
+  }
+}
+```
+
+**Cursor IDE:**
+```json
+{
+  "mcpServers": {
+    "zabbix-sse": {
+      "transport": "sse",
+      "url": "http://localhost:3001/sse",
+      "postUrl": "http://localhost:3001/message"
+    }
+  }
+}
+```
+
+**Trae AI:**
+```json
+{
+  "mcpServers": {
+    "zabbix-sse": {
+      "transport": "sse",
+      "url": "http://localhost:3001/sse",
+      "env": {
+        "ZABBIX_URL": "http://137.184.54.73/api_jsonrpc.php",
+        "ZABBIX_USERNAME": "Admin",
+        "ZABBIX_PASSWORD": "zabbix"
+      }
+    }
+  }
+}
+```
+
+**Neovim with MCPHub.nvim:**
+```lua
+require('mcphub').setup({
+  servers = {
+    ['zabbix-sse'] = {
+      transport = 'sse',
+      url = 'http://localhost:3001/sse',
+      post_url = 'http://localhost:3001/message'
+    }
+  }
+})
+```
 
 ### Running the Server
 

@@ -193,3 +193,7 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 uv.lock
+
+# Documentation files
+DOCUMENTACION-UNIFICADA.md
+claude.md
